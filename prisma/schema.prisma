@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model Settings {
+  id        Int    @id @default(1)
+  grade     String @default("小4")
+  term      String @default("1学期")
+  /// RewardTable JSON: { "0": 0, "1": 5, ... }
+  rewards   Json
+  unpaidYen Int    @default(0)
+}
+
+model Question {
+  id            String  @id
+  genre         String
+  stem          String
+  /// string[4]
+  choices       Json
+  correctIndex  Int
+  wrongFlag     Boolean @default(false)
+  lastAskedDate String?
+  lastCorrectAt String?
+}
+
+model ChoreCategory {
+  name String @id
+  sort Int    @default(0)
+}
+
+model MasterItem {
+  id       String @id
+  name     String
+  points   Int
+  category String
+  icon     String
+}
+
+model PenaltyItem {
+  id     String @id
+  name   String
+  points Int
+  icon   String
+}
+
+model MoneyLog {
+  id       Int    @id @default(autoincrement())
+  itemName String
+  points   Int
+  status   String
+  date     String
+
+  @@index([status])
+}
+
+model DailySession {
+  date          String  @id
+  questionIds   Json
+  answers       Json
+  completed     Boolean @default(false)
+  earnedYen     Int     @default(0)
+  rewardClaimed Boolean @default(false)
+}

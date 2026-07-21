@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# しなもん風 おこづかい帳（デモ）
 
-## Getting Started
+お手伝いでお小遣いを稼ぎ、その中に「まいにちクイズ」を埋め込んだ Next.js アプリです。
 
-First, run the development server:
+## 起動
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- おうち画面: http://localhost:3000
+- 管理ペイン: http://localhost:3000/admin（パスワード `papa`）
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Neon（DB）接続
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. [Neon](https://console.neon.tech/) でプロジェクトを作成し、接続文字列をコピー
+2. `.env.example` をコピーして `.env.local` を作成
+3. `DATABASE_URL=` に接続文字列を貼る
+4. テーブル作成:
 
-## Learn More
+```bash
+npm run db:push
+```
 
-To learn more about Next.js, take a look at the following resources:
+5. `npm run dev` を再起動
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+接続できていると管理ペインに「Neon接続中」と出ます。未設定時は自動で localStorage にフォールバックします。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## できること
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- おうち画面でお手伝いをタッチ申請
+- パパ管理画面で承認 / 却下 / ペナルティ
+- 管理ペインでクイズ・お手伝い・ペナルティ・報酬ルール
+- 正解済みクイズは30日で自動削除
