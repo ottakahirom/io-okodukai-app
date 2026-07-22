@@ -1,0 +1,30 @@
+{
+  "name": "衣緒のおこづかい帳",
+  "short_name": "おこづかい帳",
+  "description": "お手伝いでお小遣いをためるアプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#c8e8fd",
+  "theme_color": "#8ccbfd",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

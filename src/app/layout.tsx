@@ -3,13 +3,29 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "衣緒のおこづかい帳",
-  description: "お手伝いでお小遣いを稼ぐアプリ（まいにちクイズ付きデモ）",
+  description: "お手伝いでお小遣いを稼ぐアプリ（まいにちクイズ付き）",
+  applicationName: "衣緒のおこづかい帳",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "おこづかい帳",
+    statusBarStyle: "default",
+  },
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: "#8ccbfd",
 };
 
 export default function RootLayout({
