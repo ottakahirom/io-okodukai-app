@@ -281,7 +281,7 @@ body {
 }
 
 .cin-ai-box::before {
-  content: "☁️ しなもんのアドバイス：";
+  content: "☁️ アドバイス：";
   display: block;
   font-weight: bold;
   color: #e08598;

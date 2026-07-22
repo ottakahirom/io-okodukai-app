@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "しなもん風 おこづかい帳",
+  title: "衣緒のおこづかい帳",
   description: "お手伝いでお小遣いを稼ぐアプリ（まいにちクイズ付きデモ）",
 };
 

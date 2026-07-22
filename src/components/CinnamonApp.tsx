@@ -245,7 +245,7 @@ export function CinnamonApp() {
     <div className={`cin-body ${shake ? "shake-effect" : ""}`} id="body-element">
       <div className="cin-container">
         <div className="cin-app-header">
-          <span className="cin-float">☁️</span> しなもん風 おこづかい帳{" "}
+          <span className="cin-float">☁️</span> 衣緒のおこづかい帳{" "}
           <span className="cin-float">🥖</span>
         </div>
 
