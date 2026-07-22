@@ -2,15 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { verifyAdminPasswordAction } from "@/lib/actions";
+import { ADMIN_SESSION_KEY } from "@/lib/admin-session";
 import { approvedTotal } from "@/lib/store";
-import { ADMIN_DEMO_PASSWORD } from "@/lib/types";
-import { useDemoStore } from "@/lib/useDemoStore";
 import type { MasterItem, MoneyLog } from "@/lib/types";
+import { useDemoStore } from "@/lib/useDemoStore";
 
 type PageId = "dashboard" | "papa";
 type OverlayKind = "success" | "pending" | "danger";
-
-const PAPA_SESSION_KEY = "okodukai-papa";
 
 declare global {
   interface Window {
@@ -67,7 +66,7 @@ export function CinnamonApp() {
   const chartInstance = useRef<{ destroy: () => void } | null>(null);
 
   useEffect(() => {
-    if (sessionStorage.getItem(PAPA_SESSION_KEY) === "1") setPapaAuthed(true);
+    if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "1") setPapaAuthed(true);
   }, []);
 
   useEffect(() => {
@@ -236,7 +235,7 @@ export function CinnamonApp() {
   };
 
   const logoutPapa = () => {
-    sessionStorage.removeItem(PAPA_SESSION_KEY);
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
     setPapaAuthed(false);
     setPassword("");
   };
@@ -447,20 +446,21 @@ export function CinnamonApp() {
             {!papaAuthed ? (
               <div className="cin-papa-login">
                 <h2>パパ管理画面</h2>
-                <p className="cin-muted">
-                  デモ用パスワードは <code>papa</code>
-                </p>
+                <p className="cin-muted">パスワードを入力してください</p>
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    if (password === ADMIN_DEMO_PASSWORD) {
-                      sessionStorage.setItem(PAPA_SESSION_KEY, "1");
-                      setPapaAuthed(true);
-                      setLoginError("");
-                      setPassword("");
-                    } else {
-                      setLoginError("パスワードが違います");
-                    }
+                    void (async () => {
+                      const result = await verifyAdminPasswordAction(password);
+                      if (result.ok) {
+                        sessionStorage.setItem(ADMIN_SESSION_KEY, "1");
+                        setPapaAuthed(true);
+                        setLoginError("");
+                        setPassword("");
+                      } else {
+                        setLoginError("パスワードが違います");
+                      }
+                    })();
                   }}
                 >
                   <input

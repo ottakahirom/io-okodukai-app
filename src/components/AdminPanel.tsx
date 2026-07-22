@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { verifyAdminPasswordAction } from "@/lib/actions";
+import { ADMIN_SESSION_KEY } from "@/lib/admin-session";
 import {
   approvedTotal,
   daysUntilCorrectExpiry,
@@ -16,7 +18,7 @@ import type {
   Question,
   Settings,
 } from "@/lib/types";
-import { ADMIN_DEMO_PASSWORD, GENRES } from "@/lib/types";
+import { GENRES } from "@/lib/types";
 import { useDemoStore } from "@/lib/useDemoStore";
 
 type ViewId = "dash" | "quiz-mgr" | "chore-mgr" | "penalty-mgr" | "rule-mgr";
@@ -30,7 +32,7 @@ const MENU: { id: ViewId; label: string; short: string }[] = [
 ];
 
 function logoutAdmin() {
-  sessionStorage.removeItem("okodukai-admin");
+  sessionStorage.removeItem(ADMIN_SESSION_KEY);
 }
 
 const emptyChore = (category: string): MasterItem => ({
@@ -85,7 +87,7 @@ export function AdminPanel() {
   const [editingPenalty, setEditingPenalty] = useState<PenaltyItem | null>(null);
 
   useEffect(() => {
-    if (sessionStorage.getItem("okodukai-admin") === "1") setAuthed(true);
+    if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "1") setAuthed(true);
   }, []);
 
   useEffect(() => {
@@ -118,19 +120,21 @@ export function AdminPanel() {
       <div className="mgr-login-wrap">
         <div className="mgr-login-card">
           <h1>⚙️ お小遣い管理ペイン</h1>
-          <p className="mgr-muted">
-            デモ用パスワードは <code>papa</code>
-          </p>
+          <p className="mgr-muted">パスワードを入力してください</p>
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (password === ADMIN_DEMO_PASSWORD) {
-                sessionStorage.setItem("okodukai-admin", "1");
-                setAuthed(true);
-                setLoginError("");
-              } else {
-                setLoginError("パスワードが違います");
-              }
+              void (async () => {
+                const result = await verifyAdminPasswordAction(password);
+                if (result.ok) {
+                  sessionStorage.setItem(ADMIN_SESSION_KEY, "1");
+                  setAuthed(true);
+                  setLoginError("");
+                  setPassword("");
+                } else {
+                  setLoginError("パスワードが違います");
+                }
+              })();
             }}
           >
             <input

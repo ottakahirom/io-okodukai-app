@@ -1,9 +1,26 @@
 "use server";
 
+import { timingSafeEqual } from "crypto";
 import { hasDatabaseUrl } from "@/lib/db";
 import { loadAppStateFromDb, saveAppStateToDb, seedDb } from "@/lib/db-repo";
 import { ensureTodaySession } from "@/lib/store";
 import type { AppState } from "@/lib/types";
+
+function passwordsMatch(input: string, expected: string): boolean {
+  const a = Buffer.from(input);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
+
+/** 親管理・管理ペイン共通。パスワードはサーバーの ADMIN_PASSWORD のみで判定 */
+export async function verifyAdminPasswordAction(
+  password: string,
+): Promise<{ ok: boolean }> {
+  const expected = process.env.ADMIN_PASSWORD?.trim();
+  if (!expected || !password) return { ok: false };
+  return { ok: passwordsMatch(password, expected) };
+}
 
 export async function checkDatabaseConfigured(): Promise<boolean> {
   return hasDatabaseUrl();

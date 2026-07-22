@@ -74,5 +74,4 @@ export type AppState = {
   logs: MoneyLog[];
 };
 
-export const ADMIN_DEMO_PASSWORD = "papa";
 export const STORAGE_KEY = "okodukai-demo-v3";
