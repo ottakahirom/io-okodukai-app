@@ -10,7 +10,7 @@ npm run dev
 ```
 
 - おうち画面: http://localhost:3000
-- 管理ペイン: http://localhost:3000/admin（パスワード `papa`）
+- 管理ペイン: http://localhost:3000/admin（`ADMIN_PASSWORD` でログイン）
 
 ## Neon（DB）接続
 
