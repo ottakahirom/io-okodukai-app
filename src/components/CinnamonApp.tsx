@@ -4,12 +4,19 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { verifyAdminPasswordAction } from "@/lib/actions";
 import { ADMIN_SESSION_KEY } from "@/lib/admin-session";
+import {
+  markLogsSeen,
+  readSeenLogIds,
+  writeSeenLogIds,
+} from "@/lib/child-notify";
 import { approvedTotal } from "@/lib/store";
 import type { MasterItem, MoneyLog } from "@/lib/types";
 import { useDemoStore } from "@/lib/useDemoStore";
 
 type PageId = "dashboard" | "papa";
 type OverlayKind = "success" | "pending" | "danger";
+
+const CHILD_NOTIFY_STATUSES = new Set(["approved", "penalty"]);
 
 declare global {
   interface Window {
@@ -36,6 +43,19 @@ function loadScript(src: string): Promise<void> {
   });
 }
 
+function notifyPayload(log: MoneyLog): { text: string; kind: OverlayKind } {
+  if (log.status === "penalty") {
+    return {
+      text: `⚡ ペナルティ\n${log.itemName}\n（${log.points}円）\nつぎはがんばろうね`,
+      kind: "danger",
+    };
+  }
+  return {
+    text: `🎉 おっけー！！\n${log.itemName}\n+${log.points}円 ゲット！✨`,
+    kind: "success",
+  };
+}
+
 export function CinnamonApp() {
   const {
     state,
@@ -46,6 +66,7 @@ export function CinnamonApp() {
     addPenalty,
     approve,
     reject,
+    refreshFromServer,
   } = useDemoStore();
 
   const [page, setPage] = useState<PageId>("dashboard");
@@ -64,6 +85,12 @@ export function CinnamonApp() {
   const [shake, setShake] = useState(false);
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<{ destroy: () => void } | null>(null);
+  const seenBootstrapped = useRef(false);
+  const notifyBusy = useRef(false);
+  const notifyQueue = useRef<MoneyLog[]>([]);
+  const showOverlayRef = useRef<
+    (text: string, kind: OverlayKind, ms?: number) => void
+  >(() => undefined);
 
   useEffect(() => {
     if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "1") setPapaAuthed(true);
@@ -146,6 +173,68 @@ export function CinnamonApp() {
       setShake(false);
     }, ms);
   };
+  showOverlayRef.current = showOverlay;
+
+  // 初回：既存ログは「既読」にして過去分のアニメを出さない
+  useEffect(() => {
+    if (!ready || !state || seenBootstrapped.current) return;
+    const existing = readSeenLogIds();
+    if (existing.size === 0) {
+      writeSeenLogIds(
+        new Set(
+          state.logs
+            .filter((l) => CHILD_NOTIFY_STATUSES.has(l.status))
+            .map((l) => l.id),
+        ),
+      );
+    }
+    seenBootstrapped.current = true;
+  }, [ready, state]);
+
+  // おうち画面で新着の承認・ペナルティを通知
+  useEffect(() => {
+    if (!ready || !state || page !== "dashboard" || !seenBootstrapped.current) {
+      return;
+    }
+    const seen = readSeenLogIds();
+    const fresh = state.logs
+      .filter(
+        (l) => CHILD_NOTIFY_STATUSES.has(l.status) && !seen.has(l.id),
+      )
+      .sort((a, b) => a.id - b.id);
+    if (fresh.length === 0) return;
+
+    for (const log of fresh) {
+      if (!notifyQueue.current.some((q) => q.id === log.id)) {
+        notifyQueue.current.push(log);
+      }
+    }
+
+    const drain = () => {
+      if (notifyBusy.current) return;
+      const next = notifyQueue.current.shift();
+      if (!next) return;
+      notifyBusy.current = true;
+      const { text, kind } = notifyPayload(next);
+      showOverlayRef.current(text, kind, 2500);
+      markLogsSeen([next.id]);
+      window.setTimeout(() => {
+        notifyBusy.current = false;
+        drain();
+      }, 2600);
+    };
+    drain();
+  }, [ready, state, page]);
+
+  // 子供スマホ向け：おうち画面表示中は Neon を定期取得
+  useEffect(() => {
+    if (page !== "dashboard") return;
+    void refreshFromServer();
+    const id = window.setInterval(() => {
+      void refreshFromServer();
+    }, 4000);
+    return () => window.clearInterval(id);
+  }, [page, refreshFromServer]);
 
   const session = state?.session;
   const currentIndex = session?.answers.findIndex((a) => a === null) ?? -1;
@@ -507,11 +596,6 @@ export function CinnamonApp() {
                           className="cin-action ok"
                           onClick={() => {
                             approve(log.id);
-                            showOverlay(
-                              "🎉 おっけー！！\nおこづかいが増えたよ！✨",
-                              "success",
-                              2500,
-                            );
                           }}
                         >
                           OK
@@ -521,7 +605,6 @@ export function CinnamonApp() {
                           className="cin-action ng"
                           onClick={() => {
                             reject(log.id);
-                            showOverlay("❌ しんせいを却下しました", "danger", 1800);
                           }}
                         >
                           だめ
@@ -558,11 +641,6 @@ export function CinnamonApp() {
                         addPenalty(
                           `${selectedPenalty.icon} ${selectedPenalty.name}`,
                           selectedPenalty.points,
-                        );
-                        showOverlay(
-                          "⚡ ペナルティを登録しました\nつぎはがんばろうね",
-                          "danger",
-                          2000,
                         );
                       }}
                     >

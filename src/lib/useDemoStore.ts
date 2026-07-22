@@ -192,6 +192,15 @@ export function useDemoStore() {
     patch((prev) => ensureTodaySession({ ...prev, session: null }));
   }, [patch]);
 
+  const refreshFromServer = useCallback(async () => {
+    if (modeRef.current !== "neon") return;
+    const res = await fetchAppStateAction();
+    if (res.ok && res.state) {
+      setState(res.state);
+      setDbError(null);
+    }
+  }, []);
+
   return {
     state,
     ready,
@@ -215,5 +224,6 @@ export function useDemoStore() {
     removePenaltyItem,
     reset,
     refreshSession,
+    refreshFromServer,
   };
 }
