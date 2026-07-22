@@ -157,9 +157,9 @@ export function CinnamonApp() {
 
   const correctN = useMemo(() => {
     if (!state?.session) return 0;
-    return state.session.answers.reduce((acc, a, i) => {
+    return state.session.answers.reduce<number>((acc, a, i) => {
       const q = state.questions.find((x) => x.id === state.session!.questionIds[i]);
-      return acc + (q && a === q.correctIndex ? 1 : 0);
+      return acc + (q && a !== null && a === q.correctIndex ? 1 : 0);
     }, 0);
   }, [state]);
 

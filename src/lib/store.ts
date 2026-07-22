@@ -70,8 +70,8 @@ export function loadState(): AppState {
       logs: parsed.logs ?? base.logs,
       session: parsed.session
         ? {
-            rewardClaimed: false,
             ...parsed.session,
+            rewardClaimed: parsed.session.rewardClaimed ?? false,
           }
         : null,
     });
@@ -187,8 +187,8 @@ export function ensureTodaySession(state: AppState): AppState {
       return {
         ...state,
         session: {
-          rewardClaimed: false,
           ...state.session,
+          rewardClaimed: state.session.rewardClaimed ?? false,
         },
       };
     }
@@ -241,12 +241,12 @@ export function answerQuestion(state: AppState, choiceIndex: number): AppState {
 
   const allDone = answers.every((a) => a !== null);
   let earnedYen = session.earnedYen;
-  let completed = session.completed;
+  let completed: boolean = session.completed;
 
   if (allDone) {
-    const correct = answers.reduce((acc, a, i) => {
+    const correct = answers.reduce<number>((acc, a, i) => {
       const qq = questions.find((x) => x.id === session.questionIds[i]);
-      return acc + (qq && a === qq.correctIndex ? 1 : 0);
+      return acc + (qq && a !== null && a === qq.correctIndex ? 1 : 0);
     }, 0);
     const key = Math.min(5, correct) as 0 | 1 | 2 | 3 | 4 | 5;
     earnedYen = state.settings.rewards[key] ?? 0;

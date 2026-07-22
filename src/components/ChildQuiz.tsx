@@ -59,9 +59,9 @@ export function ChildQuiz() {
   }
 
   if (session.completed) {
-    const correct = session.answers.reduce((acc, a, i) => {
+    const correct = session.answers.reduce<number>((acc, a, i) => {
       const q = state.questions.find((x) => x.id === session.questionIds[i]);
-      return acc + (q && a === q.correctIndex ? 1 : 0);
+      return acc + (q && a !== null && a === q.correctIndex ? 1 : 0);
     }, 0);
 
     return (
